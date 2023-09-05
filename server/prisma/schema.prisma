@@ -1,0 +1,57 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       String     @db.VarChar(24) @id
+  username String     @db.VarChar(20) @unique
+  password String     @db.VarChar(24) 
+  forms    Form[]
+  sessions  Session[]
+}
+
+model Session {
+  id      String   @db.VarChar(24) @id
+  user    User     @relation(fields: [user_id], references: [id])
+  user_id String   @db.VarChar(24)
+  expires DateTime @db.DateTime(3)
+}
+
+model Form {
+  id      String         @db.VarChar(24) @id
+  user    User           @relation(fields: [user_id], references: [id])
+  user_id String         @db.VarChar(24)
+  title   String         @db.VarChar(50)
+  elements FormElement[]
+}
+
+model FormElement {
+  id              String   @db.VarChar(24) @id
+  form            Form     @relation(fields: [form_id], references: [id])
+  form_id         String   @db.VarChar(24)
+  type            String   @db.VarChar(16) // text_field, radio_group
+  question        String   @db.VarChar(500)
+  answers         Answer[]
+  answer_variants AnswerVariant[]
+}
+
+model AnswerVariant {
+  id              String      @db.VarChar(24) @id
+  form_element    FormElement @relation(fields: [form_element_id], references: [id])
+  form_element_id String      @db.VarChar(24)
+  text            String      @db.VarChar(500)
+}
+
+model Answer {
+  id              String      @db.VarChar(24) @id
+  form_element    FormElement @relation(fields: [form_element_id], references: [id])
+  form_element_id String      @db.VarChar(24) 
+  user_id         String      @db.VarChar(24)
+  text            String?     @db.VarChar(2000)
+} 
+
